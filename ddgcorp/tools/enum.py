@@ -7,6 +7,10 @@ class _EnumMeta(type):
     def __call__(cls, key):
         return cls._to_str(key)
 
+    def __iter__(cls):
+        for s, _ in cls.__dict__['choices']:
+            yield s
+
 
 class Enum(object):
     __metaclass__ = _EnumMeta

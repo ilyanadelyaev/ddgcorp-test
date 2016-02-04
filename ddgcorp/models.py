@@ -25,9 +25,36 @@ class Status(django.db.models.Model):
     name = django.db.models.PositiveSmallIntegerField(
         choices=Enum.choices,
         unique=True,
-        blank=True,
+        blank=False,
         #index=True,
     )
 
     def __unicode__(self):
         return self.Enum(self.name)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.Enum(self.name),
+        }
+
+
+class Task(django.db.models.Model):
+    """
+    """
+
+    name = django.db.models.CharField(
+        max_length=100,
+        blank=False,
+    )
+    status = django.db.models.ForeignKey(Status)
+
+    def __unicode__(self):
+        return '[{}] {}'.format(self.id, self.name)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'status': self.status.to_dict(),
+        }
