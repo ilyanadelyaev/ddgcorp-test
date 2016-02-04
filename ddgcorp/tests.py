@@ -1,3 +1,6 @@
 from django.test import TestCase
 
-# Create your tests here.
+
+class StatusModelTests(django.test.TestCase):
+    def test__unique(self):
+        pass
