@@ -1,7 +1,7 @@
 set -x
 
 rm -rf ./*/migrations/
-rm -rf ./db.sqlite3
+rm -rf ./base.sqlite3
 rm -rf ./venv
 rm -rf ./logs
 

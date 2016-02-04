@@ -1,6 +1,6 @@
 *.swp
 *.pyc
-db.sqlite3
+base.sqlite3
 
 venv/
 logs/
