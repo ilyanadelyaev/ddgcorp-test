@@ -1,5 +1,4 @@
 import json
-import calendar
 
 import django.http
 
@@ -18,12 +17,9 @@ class API(object):
     def last_modified(cls, request):
         """
         """
-        status_last_modified = ddgcorp.models.get_max_audit_log_action_date(
-            ddgcorp.models.Status)
-        task_last_modified = ddgcorp.models.get_max_audit_log_action_date(
-            ddgcorp.models.Task)
+        status_last_modified = ddgcorp.models.Status.get_last_modify_timestamp()
+        task_last_modified = ddgcorp.models.Task.get_last_modify_timestamp()
         last_modified = max(status_last_modified, task_last_modified)
-        last_modified = calendar.timegm(last_modified.timetuple())
         return cls._response(json.dumps({'timestamp': last_modified}))
 
     @classmethod
