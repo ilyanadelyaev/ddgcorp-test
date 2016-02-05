@@ -7,17 +7,19 @@
 
         <title>DDGCorp Task Tracker</title>
 
-        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        {% load staticfiles %}
+        <link href="{% static "css/lib/bootstrap.min.css" %}" rel="stylesheet">
+
+        {% block css %}{% endblock css %}
+
     </head>
 
     <body style="padding-top: 70px;">
 
-        {% load staticfiles %}
-
         <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="{% url 'www:index' %}">Tasks</a>
+                    <a class="navbar-brand" href="{% url 'www:index' %}">DGGCorp</a>
                 </div>
                 <div id="navbar" class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
@@ -27,22 +29,10 @@
             </div>
         </nav>
 
-        <div class="container">
-
-            <div class='ddgcorp'>
-
-                <p id="errors" class="bg-danger" style="padding: 20px; display:none;"></p>
-
-                <h1>DDGCorp Task Tracker</h1>
-
-                {% block content %}{% endblock content %}
-
-            </div>
-
+        <div class="container ddgcorp-canvas">
+            <p id="errors" class="bg-danger" style="padding: 20px; display:none;"></p>
+            {% block content %}{% endblock content %}
         </div>
-
-        <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
         {% block scripts %}{% endblock scripts %}
 

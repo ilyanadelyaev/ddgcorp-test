@@ -1,0 +1,42 @@
+body {
+    background-color: #35C7E8;
+}
+
+
+.dnd-draggable {
+    cursor: pointer;
+}
+
+.dnd-draggable.dragging {
+    z-index: 1;
+    pointer-events: none;
+    transform: rotate(4deg);
+}
+
+.dnd-drop-target.hover > .ddgcorp-taskslist {
+    background-color: rgb(200, 200, 200);
+}
+
+.ddgcorp-taskslist {
+    background-color: rgb(230, 230, 230);
+    border-radius: 3px;
+    margin: 0 5px;
+    padding: 4px 8px;
+}
+
+.ddgcorp-statuslabel {
+    -webkit-user-select: none;
+    cursor: default;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 3px 1px;
+}
+
+.ddgcorp-task {
+    background-color: rgb(250, 250, 250);
+    box-shadow: 1px 1px rgb(210, 210, 210);
+    border-radius: 4px;
+    margin: 5px 0;
+    padding: 4px 10px;
+
+}

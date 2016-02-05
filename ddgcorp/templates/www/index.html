@@ -1,7 +1,23 @@
 {% extends "www/base.html" %}
 
 {% block content %}
+    <div id="content" class="ddgcorp-content"></div>
 {% endblock %}
 
+{% block css %}
+    {% load staticfiles %}
+    <link href="{% static "css/main.css" %}" rel="stylesheet">
+{% endblock css %}
+
 {% block scripts %}
+    {% load staticfiles %}
+
+    <script src="{% static "js/lib/jquery-2.2.0.min.js" %}"></script>
+    <script src="{% static "js/lib/babel-core.min.js" %}"></script>
+
+    <script src="{% static "js/lib/react.js" %}"></script>
+    <script src="{% static "js/lib/react-dom.js" %}"></script>
+    <script src="{% static "js/lib/react-classnames.js" %}"></script>
+
+    <script type="text/babel" src="{% static "js/main.babel.js" %}"></script>
 {% endblock %}
