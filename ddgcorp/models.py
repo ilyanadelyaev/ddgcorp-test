@@ -1,6 +1,18 @@
+import datetime
+import pytz
+
 import django.db.models
+import audit_log.models.managers
 
 import ddgcorp.tools.enum
+
+
+def get_max_audit_log_action_date(model):
+    if not model.audit_log.count():
+        # zero time
+        return pytz.utc.localize(datetime.datetime.fromtimestamp(0))
+    return model.audit_log.latest('action_date').action_date
+
 
 
 class Status(django.db.models.Model):
@@ -29,6 +41,8 @@ class Status(django.db.models.Model):
         #index=True,
     )
 
+    audit_log = audit_log.models.managers.AuditLog()
+
     def __unicode__(self):
         return self.Enum(self.name)
 
@@ -50,7 +64,8 @@ class Task(django.db.models.Model):
     status = django.db.models.ForeignKey(Status)
 
     def __unicode__(self):
-        return '[{}] {}'.format(self.id, self.name)
+        return '[{}] {} ({})'.format(
+            self.id, self.name, str(self.status))
 
     def to_dict(self):
         return {
@@ -58,3 +73,5 @@ class Task(django.db.models.Model):
             'name': self.name,
             'status': self.status.to_dict(),
         }
+
+    audit_log = audit_log.models.managers.AuditLog()

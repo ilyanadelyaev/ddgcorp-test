@@ -1,3 +1,5 @@
 Django==1.9.2
+django-audit-log==0.7.0
+pytz==2015.7
 pylint==1.5.4
 pep8==1.7.0
