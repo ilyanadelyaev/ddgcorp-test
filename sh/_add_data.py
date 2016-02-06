@@ -18,9 +18,9 @@ for s in ddgcorp.models.Status.Enum:
 # add tasks
 for s in ddgcorp.models.Status.Enum:
     status = ddgcorp.models.Status.objects.filter(name=s).first()
-    for t in xrange(20):
+    for t in xrange(10):
         try:
-            name = 'Task {}{}'.format(s, t)
+            name = 'Task {}-{}'.format(s, t)
             ddgcorp.models.Task(
                 name=name,
                 status=status,
