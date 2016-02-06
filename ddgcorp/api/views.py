@@ -12,7 +12,7 @@ def statuses(_):
     """
     REST: /api/status/
     """
-    objs = [o.to_dict() for o in ddgcorp.models.Status.objects.all()]
+    objs = ddgcorp.models.Status.all()
     return django.http.JsonResponse(objs, safe=False)
 
 
@@ -21,7 +21,7 @@ def tasks(_):
     """
     REST: /api/task/
     """
-    objs = [o.to_dict() for o in ddgcorp.models.Task.objects.all()]
+    objs = ddgcorp.models.Task.all()
     return django.http.JsonResponse(objs, safe=False)
 
 
@@ -30,11 +30,11 @@ def task(_, pk):
     """
     REST: /api/task/<pk>/
     """
-    task_obj = ddgcorp.models.Task.objects.filter(pk=pk).first()
-    if not task_obj:
+    obj = ddgcorp.models.Task.one(pk)
+    if not obj:
         raise django.http.Http404(
             'Task {} does not exist'.format(pk))
-    return django.http.JsonResponse(task_obj.to_dict())
+    return django.http.JsonResponse(obj)
 
 
 @require_http_methods(['PUT'])
@@ -46,19 +46,11 @@ def task__status(request, pk):
     data = json.loads(request.body)
     if 'status' not in data:
         raise django.http.Http404('Invalid data')
-    # get task
-    task_obj = ddgcorp.models.Task.objects.filter(pk=pk).first()
-    if not task_obj:
-        raise django.http.Http404(
-            'Task {} does not exist'.format(pk))
-    # get new status
     status_id = data['status']
-    status_obj = ddgcorp.models.Status.objects.filter(pk=status_id).first()
-    if not status_obj:
-        raise django.http.Http404(
-            'Status {} does not exist'.format(status_id))
-    # update status
-    task_obj.status = status_obj
-    task_obj.save()
+    #
+    try:
+        ddgcorp.models.Task.update_status(pk, status_id)
+    except ddgcorp.models.ModelsException as ex:
+        raise django.http.Http404(ex.message)
     #
     return django.http.JsonResponse({})

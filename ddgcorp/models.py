@@ -3,6 +3,18 @@ import django.db.models
 import ddgcorp.tools.enum
 
 
+class ModelsException(Exception):
+    """
+    Unknown models exception
+    """
+
+
+class TaskModelException(ModelsException):
+    """
+    Task model exception
+    """
+
+
 class Status(django.db.models.Model):
     """
     Task status
@@ -32,10 +44,19 @@ class Status(django.db.models.Model):
     def __unicode__(self):
         return self.Enum(self.name)
 
+    @classmethod
+    def all(cls):
+        """
+        Get all list
+        """
+        return [
+            {'id': o['id'], 'name': cls.Enum(o['name'])}
+            for o in cls.objects.values('id', 'name').all()
+        ]
+
     def to_dict(self):
         """
-        Obfuscation logic
-        Instead of django serialization
+        Obfuscation
         """
         return {
             'id': self.id,
@@ -58,10 +79,42 @@ class Task(django.db.models.Model):
         return '[{}] {} ({})'.format(
             self.id, self.name, str(self.status))
 
+    @classmethod
+    def one(cls, pk):
+        """
+        Get one or none
+        """
+        return cls.objects.filter(pk=pk).values(
+            'id', 'name', 'status_id').first()
+
+    @classmethod
+    def all(cls):
+        """
+        Get all list
+        """
+        return list(cls.objects.values('id', 'name', 'status_id').all())
+
+    @classmethod
+    def update_status(cls, pk, status_id):
+        """
+        Update task status
+        """
+        # Use TRANSACTION here
+        task = cls.objects.filter(pk=pk).first()
+        if not task:
+            raise TaskModelException(
+                'Task {} does not exist'.format(pk))
+        status = Status.objects.filter(pk=status_id).first()
+        if not status:
+            raise TaskModelException(
+                'Status {} does not exist'.format(status_id))
+        # update status
+        task.status = status
+        task.save()
+
     def to_dict(self):
         """
-        Obfuscation logic
-        Instead of django serialization
+        Obfuscation
         """
         return {
             'id': self.id,
