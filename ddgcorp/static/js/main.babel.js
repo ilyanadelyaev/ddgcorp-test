@@ -44,6 +44,14 @@ var Draggable = React.createClass({
     // * dragID - to identify child object
 
     // handlers
+    onMouseEnter: function(e) {
+        this.setState({hover: true});
+    },
+
+    onMouseLeave: function(e) {
+        this.setState({hover: false});
+    },
+
     onMouseDown: function(e) {
         if ( e.button == 0 ) {  // left button
             e.stopPropagation();
@@ -64,6 +72,7 @@ var Draggable = React.createClass({
             });
         }
     },
+
     onMouseMove: function(e) {
         var deltaX = e.pageX - this.state.originX;
         var deltaY = e.pageY - this.state.originY;
@@ -83,6 +92,7 @@ var Draggable = React.createClass({
             });
         }
     },
+
     onMouseUp: function(e) {
         this.removeEvents();
         if ( this.state.dragging ) {
@@ -90,22 +100,29 @@ var Draggable = React.createClass({
             this.props.onDragStop && this.props.onDragStop();
         }
     },
-    //
+
+    // Init
+
+    getInitialState: function() {
+        return {
+            mouseDown: false,
+            dragging: false,
+            hover: false
+        }
+    },
+
+    // Tools
+
     addEvents: function() {
         document.addEventListener('mousemove', this.onMouseMove);
         document.addEventListener('mouseup', this.onMouseUp);
     },
+
     removeEvents: function() {
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
     },
-    //
-    getInitialState: function() {
-        return {
-            mouseDown: false,
-            dragging: false
-        }
-    },
+
     style: function() {
         if ( this.state.dragging ) {
             return {
@@ -120,19 +137,25 @@ var Draggable = React.createClass({
             return {}
         }
     },
+
+    // Draw
+
     render: function() {
         // classNames
         var classes = classNames({
             'dnd-draggable': true,
-            'dragging': this.state.dragging
+            'dragging': this.state.dragging,
+            'hover': this.state.hover
         });
         // draw
         return (
             <div
                 className={classes}
                 style={this.style()}
-                onMouseDown={this.onMouseDown}
                 children={this.props.children}
+                onMouseDown={this.onMouseDown}
+                onMouseEnter={this.onMouseEnter}
+                onMouseLeave={this.onMouseLeave}
             />
         );
     }
@@ -152,10 +175,14 @@ var DropTarget = React.createClass({
     },
     //
     onMouseEnter: function(e) {
-        this.setState({hover: true});
+        this.mouseHover(true);
     },
     onMouseLeave: function(e) {
-        this.setState({hover: false});
+        this.mouseHover(false);
+    },
+    mouseHover: function(hover) {
+        this.setState({hover: hover});
+        this.props.mouseHover && this.props.mouseHover(hover)
     },
     //
     getInitialState: function() {
@@ -229,7 +256,7 @@ var TasksList = React.createClass({
     // CSS: ddgcorp-taskslist + col-md-2
 
     // D-n-D callback on mouse hover
-    mouseHoverState: function(hover) {
+    mouseHover: function(hover) {
         this.setState({hover: hover});
     },
 
@@ -241,6 +268,12 @@ var TasksList = React.createClass({
         }
     },
 
+    getInitialState: function() {
+        return {
+            hover: false,
+        }
+    },
+
     // tools
     elID: function() {
         return 'tasks-list-' + this.props.tasks_list.id;
@@ -248,6 +281,13 @@ var TasksList = React.createClass({
 
     // draw
     render: function() {
+        // drop place
+        var drop_place = '';
+        if ( this.props.dragging() && this.state.hover ) {
+            drop_place = (
+                <div className='dnd-drop-place'/>
+            );
+        }
         // tasks list
         var tasks = '';
         var _this = this;  // declare locally
@@ -267,6 +307,7 @@ var TasksList = React.createClass({
             <DropTarget
                 dropID={this.dropID}
                 onDrop={this.props.onDrop}
+                mouseHover={this.mouseHover}
             >
                 <div
                     id={this.elID()}
@@ -279,6 +320,7 @@ var TasksList = React.createClass({
                     >
                         {this.props.tasks_list.name}
                     </div>
+                    {drop_place}
                     {tasks}
                 </div>
             </DropTarget>
@@ -301,6 +343,10 @@ var Board = React.createClass({
 
     onDragStop: function() {
         this.setState({current_drag_item: null})
+    },
+
+    dragging: function() {
+        return ! ! this.state.current_drag_item;
     },
 
     onDrop: function(data) {
@@ -337,9 +383,19 @@ var Board = React.createClass({
     // WebSockets
 
     wsRegisterHandler: function() {
-        var ws_uri = 'ws://127.0.0.1:8000/ws/models?subscribe-broadcast&publish-broadcast&echo'
+        // relative ws uri
+        var loc = window.location;
+        var uri = '';
+        if (loc.protocol === 'https:') {
+            uri = 'wss:';
+        } else {
+            uri = 'ws:';
+        }
+        uri += '//' + loc.host;
+        uri += '/ws/models?subscribe-broadcast';
+        //
         var ws_handler = WS4Redis({
-            uri: ws_uri,
+            uri: uri,
             receive_message: this.wsMessageRecieved,
             heartbeat_msg: '--heartbeat--'
         });
@@ -505,6 +561,7 @@ var Board = React.createClass({
                         onDragStart={_this.onDragStart}
                         onDragStop={_this.onDragStop}
                         onDrop={_this.onDrop}
+                        dragging={_this.dragging}
                     />
                 );
             });
