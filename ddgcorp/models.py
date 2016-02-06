@@ -33,6 +33,10 @@ class Status(django.db.models.Model):
         return self.Enum(self.name)
 
     def to_dict(self):
+        """
+        Obfuscation logic
+        Instead of django serialization
+        """
         return {
             'id': self.id,
             'name': self.Enum(self.name),
@@ -55,6 +59,10 @@ class Task(django.db.models.Model):
             self.id, self.name, str(self.status))
 
     def to_dict(self):
+        """
+        Obfuscation logic
+        Instead of django serialization
+        """
         return {
             'id': self.id,
             'name': self.name,
