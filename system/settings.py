@@ -127,6 +127,47 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format':
+            "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt':
+            "%Y/%m/%d %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'system': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/system.log',
+            'formatter': 'verbose'
+        },
+        'app': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/app.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['system'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'ddgcorp': {
+            'handlers': ['app'],
+            'level': 'DEBUG',
+        },
+    }
+}
+
+
 # WebSocket
 
 WEBSOCKET_URL = '/ws/'
