@@ -8,7 +8,7 @@ import ddgcorp.models
 
 
 @require_http_methods(['GET'])
-def statuses(request):
+def statuses(_):
     """
     REST: /api/status/
     """
@@ -17,7 +17,7 @@ def statuses(request):
 
 
 @require_http_methods(['GET'])
-def tasks(request):
+def tasks(_):
     """
     REST: /api/task/
     """
@@ -26,54 +26,39 @@ def tasks(request):
 
 
 @require_http_methods(['GET'])
-def task(request, pk):
+def task(_, pk):
     """
     REST: /api/task/<pk>/
     """
-    task = ddgcorp.models.Task.objects.filter(pk=pk).first()
-    if not task:
-        raise django.http.Http404('Task {} does not exist'.format(pk))
-    return django.http.JsonResponse(task.to_dict())
+    task_obj = ddgcorp.models.Task.objects.filter(pk=pk).first()
+    if not task_obj:
+        raise django.http.Http404(
+            'Task {} does not exist'.format(pk))
+    return django.http.JsonResponse(task_obj.to_dict())
 
 
 @require_http_methods(['PUT'])
 def task__status(request, pk):
     """
     REST: /api/task/<pk>/status
-    data: {'status': new_status}
+    data: {'status': status_id}
     """
     data = json.loads(request.body)
     if 'status' not in data:
         raise django.http.Http404('Invalid data')
     # get task
-    task = ddgcorp.models.Task.objects.filter(pk=pk).first()
-    if not task:
-        raise django.http.Http404('Task {} does not exist'.format(pk))
+    task_obj = ddgcorp.models.Task.objects.filter(pk=pk).first()
+    if not task_obj:
+        raise django.http.Http404(
+            'Task {} does not exist'.format(pk))
     # get new status
-    new_status = data['status']
-    status = ddgcorp.models.Status.objects.filter(pk=new_status).first()
-    if not status:
-        raise django.http.Http404('Status {} does not exist'.format(new_status))
+    status_id = data['status']
+    status_obj = ddgcorp.models.Status.objects.filter(pk=status_id).first()
+    if not status_obj:
+        raise django.http.Http404(
+            'Status {} does not exist'.format(status_id))
     # update status
-    task.status = status
-    task.save()
+    task_obj.status = status_obj
+    task_obj.save()
     #
     return django.http.JsonResponse({})
-
-
-@require_http_methods(['GET'])
-def handle__last_modified(request):
-    """
-    HANDLE: /api/handle/last_modified
-    get last database modification timestamp
-    """
-    models_to_check = (
-        ddgcorp.models.Status,
-        ddgcorp.models.Task,
-    )
-    # get max timestamp from selected models
-    timestamps = []
-    for model in models_to_check:
-        timestamps.append(model.get_last_modify_timestamp())
-    #
-    return django.http.JsonResponse({'timestamp': max(timestamps)})

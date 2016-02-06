@@ -1,30 +1,9 @@
-import datetime
-import pytz
-import calendar
-
 import django.db.models
-import audit_log.models.managers
 
 import ddgcorp.tools.enum
 
 
-class Audit(object):
-    """
-    Mixin processor audit_log in models
-    """
-
-    @classmethod
-    def get_last_modify_timestamp(cls):
-        """
-        Returns zero date in not exists
-        """
-        if not cls.audit_log.count():
-            return 0
-        date = cls.audit_log.latest('action_date').action_date
-        return calendar.timegm(date.timetuple())
-
-
-class Status(django.db.models.Model, Audit):
+class Status(django.db.models.Model):
     """
     Task status
     """
@@ -50,8 +29,6 @@ class Status(django.db.models.Model, Audit):
         blank=False,
     )
 
-    audit_log = audit_log.models.managers.AuditLog()
-
     def __unicode__(self):
         return self.Enum(self.name)
 
@@ -62,7 +39,7 @@ class Status(django.db.models.Model, Audit):
         }
 
 
-class Task(django.db.models.Model, Audit):
+class Task(django.db.models.Model):
     """
     Task info
     """
@@ -72,8 +49,6 @@ class Task(django.db.models.Model, Audit):
         blank=False,
     )
     status = django.db.models.ForeignKey(Status)
-
-    audit_log = audit_log.models.managers.AuditLog()
 
     def __unicode__(self):
         return '[{}] {} ({})'.format(

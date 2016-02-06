@@ -1,3 +1,5 @@
+// CSRF token for AJAX
+
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -288,26 +290,19 @@ var Board = React.createClass({
     // Process D-n-D here
     // Make server requests here
     // Create and update board configuration here
+    // Process WebSockets
     // CSS: ddgcorp-board + row
 
-    // init
-    getInitialState: function() {
-        return {
-            board_statuses: null,  // avaliable board statuses to create board
-            board: null,  // board configuration
-            current_drag_item: null,
-            update_timer: null,
-            last_modified: 0  // timestamp
-        }
-    },
-
     // D-n-D handlers
+
     onDragStart: function(data) {
         this.setState({current_drag_item: data})
     },
+
     onDragStop: function() {
         this.setState({current_drag_item: null})
     },
+
     onDrop: function(data) {
         // update board configuration and send server update request
         //
@@ -339,24 +334,37 @@ var Board = React.createClass({
         this.updateTaskStatus(task_id, end_list_id);
     },
 
-    // preprocess and load data
-    componentDidMount: function() {
-        this.loadStatuses();
-        // set update timer
-        if ( ! this.state.update_timer ) {
-            this.setState({
-                update_timer: setInterval(this.foregroundUpdater, 2000)
-            });
+    // WebSockets
+
+    wsRegisterHandler: function() {
+        var ws_uri = 'ws://127.0.0.1:8000/ws/models?subscribe-broadcast&publish-broadcast&echo'
+        var ws_handler = WS4Redis({
+            uri: ws_uri,
+            receive_message: this.wsMessageRecieved,
+            heartbeat_msg: '--heartbeat--'
+        });
+        this.setState({ws_handler: ws_handler});
+    },
+
+    wsMessageRecieved: function(data) {
+        data = JSON.parse(data);
+        if ( ! data.objects )
+            return;
+        switch ( data.model ) {
+            case 'status':
+                var board_statuses = this.statusesDataToStatuses(data.objects);
+                this.setState({board_statuses: board_statuses});
+                break;
+            case 'task':
+                var board = this.boardDataToBoard(data.objects);
+                this.setState({board: board});
+                break;
         }
     },
 
-    componentWillUnmount: function() {
-        clearInterval(this.state.update_timer);
-        this.setState({update_timer: null});
-    },
+    // Server comunication
 
-    // fetch statuses
-    loadStatuses: function() {
+    fetchStatuses: function() {
         var url = '/api/status/';
         $.ajax({
             url: url,
@@ -364,13 +372,10 @@ var Board = React.createClass({
             dataType: 'json',
             cache: false,
             success: function(data) {
-                var board_statuses = {};
-                data.map(function(o) {
-                    board_statuses[o.id] = o;
-                });
+                var board_statuses = this.statusesDataToStatuses(data);
                 this.setState({board_statuses: board_statuses});
                 // load tasks
-                this.loadTasks();
+                this.fetchTasks();
             }.bind(this),
             error: function(xhr, status, err) {
                 // show error
@@ -379,8 +384,7 @@ var Board = React.createClass({
         });
     },
 
-    // fetch tasks
-    loadTasks: function() {
+    fetchTasks: function() {
         var url = '/api/task/';
         $.ajax({
             url: url,
@@ -388,18 +392,7 @@ var Board = React.createClass({
             dataType: 'json',
             cache: false,
             success: function(data) {
-                var board = {};
-                data.map(function(d) {
-                    if ( ! ( d.status.id in board ) ) {
-                        board[d.status.id] = {
-                            id: d.status.id,
-                            name: d.status.name,
-                            tasks: {}
-                        }
-                    }
-                    board[d.status.id].tasks[d.id] = d;
-                });
-                //
+                var board = this.boardDataToBoard(data);
                 this.setState({board: board});
             }.bind(this),
             error: function(xhr, status, err) {
@@ -409,36 +402,6 @@ var Board = React.createClass({
         });
     },
 
-    checkModifiedAndUpdate: function() {
-        var url = '/api/handle/last_modified';
-        $.ajax({
-            url: url,
-            type: 'GET',
-            dataType: 'json',
-            cache: false,
-            success: function(data) {
-                if ( data.timestamp != this.state.last_modified ) {
-                    this.setState({last_modified: data.timestamp});
-                    this.loadTasks();
-                }
-            }.bind(this),
-            error: function(xhr, status, err) {
-                // show error
-                console.error(url, status, err.toString());
-            }.bind(this)
-        });
-    },
-
-    // foreground update board
-    foregroundUpdater: function() {
-        // dragging now? - skip update
-        if ( this.state.current_drag_item )
-            return;
-        // update board
-        this.checkModifiedAndUpdate();
-    },
-
-    // update task status
     updateTaskStatus: function(task_id, new_status_id) {
         // send new task status to server
         var url = '/api/task/' + task_id + '/status/';
@@ -456,7 +419,51 @@ var Board = React.createClass({
         });
     },
 
-    // tools
+    // Init
+
+    getInitialState: function() {
+        return {
+            board_statuses: null,  // avaliable board statuses to create board
+            board: null,  // board configuration
+            current_drag_item: null,
+        }
+    },
+
+    componentDidMount: function() {
+        // init from server
+        this.fetchStatuses();
+        // register ws
+        this.wsRegisterHandler();
+    },
+
+    componentWillUnmount: function() {
+    },
+
+    // Tools
+
+    statusesDataToStatuses: function(data) {
+        var board_statuses = {};
+        data.map(function(o) {
+            board_statuses[o.id] = o;
+        });
+        return board_statuses;
+    },
+
+    boardDataToBoard: function(data) {
+        var board = {};
+        data.map(function(d) {
+            if ( ! ( d.status.id in board ) ) {
+                board[d.status.id] = {
+                    id: d.status.id,
+                    name: d.status.name,
+                    tasks: {}
+                }
+            }
+            board[d.status.id].tasks[d.id] = d;
+        });
+        return board;
+    },
+
     getBoardConfiguration: function() {
         var board = this.state.board;
         var board_statuses = this.state.board_statuses;
@@ -482,7 +489,8 @@ var Board = React.createClass({
         return ret;
     },
 
-    // draw
+    // Draw
+
     render: function() {
         var board_configuration = this.getBoardConfiguration();
         // create tasks_lists
@@ -515,6 +523,7 @@ var Board = React.createClass({
 });
 
 
-// run
+// Run
+
 var mountNode = document.getElementById('content');
 ReactDOM.render(<Board/>, mountNode);

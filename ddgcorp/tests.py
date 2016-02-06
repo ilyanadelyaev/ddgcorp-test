@@ -1,27 +1,14 @@
-import time
-
 import django.test
 import django.db
 
 import ddgcorp.models
 
 
-class AuditTests(django.test.TestCase):
-    def test__last_modify(self):
-        """
-        correct timestamp
-        """
-        start_time = time.time()
-        ddgcorp.models.Status(
-            name=ddgcorp.models.Status.Enum.new,
-        ).save()
-        end_time = time.time()
-        #
-        modify = ddgcorp.models.Status.get_last_modify_timestamp()
-        assert modify >= int(start_time) and modify <= int(end_time)
-
-
 class StatusModelTests(django.test.TestCase):
+    """
+    Model: Status
+    """
+
     def test__blank(self):
         """
         blank=False
@@ -49,6 +36,9 @@ class StatusModelTests(django.test.TestCase):
             'column name is not unique'
 
     def test__to_dict(self):
+        """
+        to_dict()
+        """
         obj = ddgcorp.models.Status(
             name=ddgcorp.models.Status.Enum.new,
         )
@@ -60,6 +50,10 @@ class StatusModelTests(django.test.TestCase):
 
 
 class TaskModelTests(django.test.TestCase):
+    """
+    Model: Task
+    """
+
     def test__blank(self):
         """
         blank=False
@@ -78,6 +72,9 @@ class TaskModelTests(django.test.TestCase):
             'ddgcorp_task.name may not be NULL'
 
     def test__to_dict(self):
+        """
+        to_dict()
+        """
         status = ddgcorp.models.Status(
             name=ddgcorp.models.Status.Enum.new,
         )

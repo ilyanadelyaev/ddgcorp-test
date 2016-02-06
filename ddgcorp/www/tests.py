@@ -1,11 +1,11 @@
-import json
-
 import django.test
-
-import ddgcorp.models
 
 
 class WWWTests(django.test.TestCase):
+    """
+    view tests
+    """
+
     def setUp(self):
         self.client = django.test.Client()
 

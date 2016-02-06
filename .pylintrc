@@ -1,9 +1,21 @@
 [MASTER]
+load-plugins=pylint_django
+
 msg-template={path}:{line}: [{msg_id}({symbol}), {obj}] {msg}'
 
 
+[BASIC]
+bad-functions=map,input
+
+
+[TYPECHECK]
+generated-members=save,objects,id,[a-zA-Z]+_set
+
+
 [MESSAGES CONTROL]
+# I0011 Locally disabled
 # C0103 Invalid name
 # C0111 Missing docstring
+# R0201 No self use
 # R0903 Too few public methods
-disable=C0103,C0111,R0903
+disable=I0011,C0103,C0111,R0201,R0903

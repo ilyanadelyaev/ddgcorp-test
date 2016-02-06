@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #
+    'ws4redis',
+    #
     'ddgcorp',
 ]
 
@@ -50,8 +52,6 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #
-    'audit_log.middleware.UserLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'system.urls'
@@ -67,6 +67,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                #
+                'ws4redis.context_processors.default',
             ],
         },
     },
@@ -123,3 +125,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# WebSocket
+
+WEBSOCKET_URL = '/ws/'
+
+WS4REDIS_CONNECTION = {
+    'host': 'localhost',
+    'port': 6379,
+}
+
+WS4REDIS_EXPIRE = 7200
+
+WS4REDIS_HEARTBEAT = '--heartbeat--'
+
+#WS4REDIS_SUBSCRIBER = 'myapp.redis_store.RedisSubscriber'
+
+WSGI_APPLICATION = 'ws4redis.django_runserver.application'

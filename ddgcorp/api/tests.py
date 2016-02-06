@@ -1,5 +1,4 @@
 import json
-import time
 
 import django.test
 
@@ -7,6 +6,10 @@ import ddgcorp.models
 
 
 class RESTTests(django.test.TestCase):
+    """
+    REST methods tests
+    """
+
     def setUp(self):
         self.client = django.test.Client()
 
@@ -159,33 +162,5 @@ class RESTTests(django.test.TestCase):
 
     def test__task__status__get(self):
         resp = self.client.post('/api/task/1/status/')
-        # method not allowed
-        assert resp.status_code == 405
-
-
-class HandlesTests(django.test.TestCase):
-    def setUp(self):
-        self.client = django.test.Client()
-
-    def test__last_modified__get(self):
-        start_time = int(time.time())
-        status = ddgcorp.models.Status(
-            name=ddgcorp.models.Status.Enum.new,
-        )
-        status.save()
-        end_time = int(time.time())
-        #
-        resp = self.client.get('/api/handle/last_modified')
-        assert resp.status_code == 200
-        timestamp = resp.json()['timestamp']
-        assert timestamp >= start_time and timestamp <= end_time
-
-    def test__last_modified__get__empty(self):
-        resp = self.client.get('/api/handle/last_modified')
-        assert resp.status_code == 200
-        assert resp.json() == {'timestamp': 0}
-
-    def test__last_modified__post(self):
-        resp = self.client.post('/api/handle/last_modified')
         # method not allowed
         assert resp.status_code == 405

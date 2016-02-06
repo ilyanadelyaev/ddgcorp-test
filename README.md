@@ -2,6 +2,12 @@
 
 Task manager on Django framework with REST-api and JS layout.
 
+* Django
+* React.js
+* WebSokets
+* Redis.io
+
+
 ## Init
 ```
 [sudo] pip install virtualenv
@@ -10,13 +16,16 @@ source venv/bin/activate
 ```
 
 ## Test
+* pep8
+* pylint
 ```
 ./sh/test.sh
 ```
 
 ## Run
 ```
-./sh/run.sh
+c0 $ ./redis-server  # default config
+c1 $ ./sh/run.sh
 ```
 
 ## Clean

@@ -4,7 +4,6 @@ import ddgcorp.api.views
 
 
 urlpatterns = [
-    # REST
     django.conf.urls.url(
         r'^status/$',
         ddgcorp.api.views.statuses,
@@ -24,12 +23,5 @@ urlpatterns = [
         r'^task/(?P<pk>[0-9]+)/status/$',
         ddgcorp.api.views.task__status,
         name='task__status'
-    ),
-
-    # handles
-    django.conf.urls.url(
-        r'^handle/last_modified$',
-        ddgcorp.api.views.handle__last_modified,
-        name='handle__last_modified'
     ),
 ]
