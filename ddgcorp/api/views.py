@@ -50,7 +50,7 @@ def task__status(request, pk):
     #
     try:
         ddgcorp.models.Task.update_status(pk, status_id)
-    except ddgcorp.models.ModelsException as ex:
+    except ddgcorp.models.TaskModelError as ex:
         raise django.http.Http404(ex.message)
     #
     return django.http.JsonResponse({})

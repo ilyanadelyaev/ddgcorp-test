@@ -167,17 +167,17 @@ class TaskModelTests(django.test.TestCase):
 
     def test__update_status__invalid_task(self):
         """
-        update_status() raises TaskModelException
+        update_status() raises TaskModelError
         """
         with self.assertRaises(
-                ddgcorp.models.TaskModelException) as ex_info:
+                ddgcorp.models.TaskModelError) as ex_info:
             ddgcorp.models.Task.update_status(0, 0)
         assert ex_info.exception.message == \
             'Task 0 does not exist'
 
     def test__update_status__invalid_status(self):
         """
-        update_status() raises TaskModelException
+        update_status() raises TaskModelError
         """
         status = ddgcorp.models.Status(
             name=ddgcorp.models.Status.Enum.new,
@@ -190,7 +190,7 @@ class TaskModelTests(django.test.TestCase):
         task.save()
         #
         with self.assertRaises(
-                ddgcorp.models.TaskModelException) as ex_info:
+                ddgcorp.models.TaskModelError) as ex_info:
             ddgcorp.models.Task.update_status(task.id, 0)
         assert ex_info.exception.message == \
             'Status 0 does not exist'

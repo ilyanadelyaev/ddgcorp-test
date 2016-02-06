@@ -3,15 +3,15 @@ import django.db.models
 import ddgcorp.tools.enum
 
 
-class ModelsException(Exception):
+class ModelsError(Exception):
     """
-    Unknown models exception
+    Unknown models error
     """
 
 
-class TaskModelException(ModelsException):
+class TaskModelError(ModelsError):
     """
-    Task model exception
+    Task model error
     """
 
 
@@ -102,11 +102,11 @@ class Task(django.db.models.Model):
         # Use TRANSACTION here
         task = cls.objects.filter(pk=pk).first()
         if not task:
-            raise TaskModelException(
+            raise TaskModelError(
                 'Task {} does not exist'.format(pk))
         status = Status.objects.filter(pk=status_id).first()
         if not status:
-            raise TaskModelException(
+            raise TaskModelError(
                 'Status {} does not exist'.format(status_id))
         # update status
         task.status = status
