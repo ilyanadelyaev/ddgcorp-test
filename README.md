@@ -8,10 +8,11 @@ Task manager on Django framework with REST-api and JS layout.
 * Redis.io
 
 
-## Init
+## Init and Add test data
 ```
 [sudo] pip install virtualenv
 ./sh/init.sh
+./sh/add_data.sh
 source venv/bin/activate
 ```
 
