@@ -86,4 +86,4 @@ class TaskModelTests(django.test.TestCase):
         #
         assert dct['id'] == task.id
         assert dct['name'] == 'name'
-        assert dct['status']['id'] == status.id
+        assert dct['status_id'] == status.id

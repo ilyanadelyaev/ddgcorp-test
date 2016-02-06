@@ -51,10 +51,7 @@ class RESTTests(django.test.TestCase):
         assert resp.json() == [{
             'id': task.id,
             'name': task.name,
-            'status': {
-                'id': status.id,
-                'name': ddgcorp.models.Status.Enum(status.name),
-            },
+            'status_id': status.id,
         }]
 
     def test__tasks__post(self):
@@ -80,10 +77,7 @@ class RESTTests(django.test.TestCase):
         assert resp.json() == {
             'id': task.id,
             'name': task.name,
-            'status': {
-                'id': status.id,
-                'name': ddgcorp.models.Status.Enum(status.name),
-            },
+            'status_id': status.id,
         }
 
     def test__task__get__not_exists(self):

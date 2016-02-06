@@ -355,27 +355,17 @@ var Board = React.createClass({
         if ( ! this.state.current_drag_item )
             return
         //
-        var board = this.state.board;
-        var board_statuses = this.state.board_statuses;
+        var tasks = this.state.tasks;
+        var statuses = this.state.statuses;
         //
         var task_id = this.state.current_drag_item.id;
         var start_list_id = this.state.current_drag_item.list_id;
         var end_list_id = data.id;
-        var task = board[start_list_id].tasks[task_id];
-        // update configuration
-        delete board[start_list_id].tasks[task_id];
-        // create board list if needed
-        if ( ! ( end_list_id in board ) ) {
-            board[end_list_id] = {
-                id: end_list_id,
-                name: this.state.board_statuses[end_list_id].name,
-                tasks: []
-            }
-        }
-        // insert into list
-        board[end_list_id].tasks[task_id] = task;
+        var new_status = statuses[end_list_id];
+        // update task status
+        tasks[task_id].status_id = new_status.id;
         //
-        //this.setState({board: board});
+        //this.setState({tasks: tasks});
         // send update request to server
         this.updateTaskStatus(task_id, end_list_id);
     },
@@ -403,17 +393,27 @@ var Board = React.createClass({
     },
 
     wsMessageRecieved: function(data) {
-        data = JSON.parse(data);
-        if ( ! data.objects )
+        if ( ! this.state.statuses || ! this.state.tasks )
             return;
-        switch ( data.model ) {
+        data = JSON.parse(data);
+        if ( ! data.model )
+            return;
+        switch ( data.type ) {
             case 'status':
-                var board_statuses = this.statusesDataToStatuses(data.objects);
-                this.setState({board_statuses: board_statuses});
+                if ( data.action == 'save' ) {
+                    this.state.statuses[data.model.id] = data.model;
+                } else if ( data.action == 'delete' ) {
+                    delete this.state.statuses[data.model.id];
+                }
+                this.setState({statuses: this.state.statuses});
                 break;
             case 'task':
-                var board = this.boardDataToBoard(data.objects);
-                this.setState({board: board});
+                if ( data.action == 'save' ) {
+                    this.state.tasks[data.model.id] = data.model;
+                } else if ( data.action == 'delete' ) {
+                    delete this.state.tasks[data.model.id];
+                }
+                this.setState({tasks: this.state.tasks});
                 break;
         }
     },
@@ -428,8 +428,8 @@ var Board = React.createClass({
             dataType: 'json',
             cache: false,
             success: function(data) {
-                var board_statuses = this.statusesDataToStatuses(data);
-                this.setState({board_statuses: board_statuses});
+                var statuses = this.convertStatuses(data);
+                this.setState({statuses: statuses});
                 // load tasks
                 this.fetchTasks();
             }.bind(this),
@@ -448,8 +448,8 @@ var Board = React.createClass({
             dataType: 'json',
             cache: false,
             success: function(data) {
-                var board = this.boardDataToBoard(data);
-                this.setState({board: board});
+                var tasks = this.convertTasks(data);
+                this.setState({tasks: tasks});
             }.bind(this),
             error: function(xhr, status, err) {
                 // show error
@@ -479,8 +479,8 @@ var Board = React.createClass({
 
     getInitialState: function() {
         return {
-            board_statuses: null,  // avaliable board statuses to create board
-            board: null,  // board configuration
+            statuses: null,
+            tasks: null,
             current_drag_item: null,
         }
     },
@@ -497,64 +497,59 @@ var Board = React.createClass({
 
     // Tools
 
-    statusesDataToStatuses: function(data) {
-        var board_statuses = {};
-        data.map(function(o) {
-            board_statuses[o.id] = o;
+    convertStatuses: function(data) {
+        var statuses = {};
+        data.map(function(status) {
+            statuses[status.id] = status;
         });
-        return board_statuses;
+        return statuses;
     },
 
-    boardDataToBoard: function(data) {
-        var board = {};
-        data.map(function(d) {
-            if ( ! ( d.status.id in board ) ) {
-                board[d.status.id] = {
-                    id: d.status.id,
-                    name: d.status.name,
-                    tasks: {}
-                }
-            }
-            board[d.status.id].tasks[d.id] = d;
+    convertTasks: function(data) {
+        var tasks = {};
+        data.map(function(task) {
+            tasks[task.id] = task;
         });
-        return board;
+        return tasks;
     },
 
-    getBoardConfiguration: function() {
-        var board = this.state.board;
-        var board_statuses = this.state.board_statuses;
-        if ( ! board || ! board_statuses )
+    getBoardConfig: function() {
+        var tasks = this.state.tasks;
+        var statuses = this.state.statuses;
+        if ( ! tasks || ! statuses )
             return;
         //
-        var ret = [];
-        // collect all statuses
-        for ( var s in board_statuses ) {
-            var status = board_statuses[s];
-            var tasks = [];
-            if ( status.id in board ) {
-                for (var t in board[status.id].tasks) {
-                    tasks.push(board[status.id].tasks[t]);
-                }
-            }
-            ret.push({
-                id: status.id,
-                name: status.name,
-                tasks: tasks
-            });
+        var board_config = {};
+        // statuses
+        for ( var s in statuses ) {
+            var status = statuses[s];
+            board_config[status.id] = {
+                'id': status.id,
+                'name': status.name,
+                'tasks': []
+            };
         }
-        return ret;
+        // tasks
+        for ( var t in tasks ) {
+            var task = tasks[t];
+            if ( task.status_id in board_config )
+                board_config[task.status_id].tasks.push(task);
+        }
+        //
+        return board_config;
     },
 
     // Draw
 
     render: function() {
-        var board_configuration = this.getBoardConfiguration();
+        var board_config = this.getBoardConfig();
         // create tasks_lists
-        var lists = '';
-        if ( board_configuration ) {
+        var lists = [];
+        if ( board_config ) {
             var _this = this;  // declare locally
-            lists = board_configuration.map(function(tasks_list) {
-                return (
+            for ( var s in board_config ) {
+                var tasks_list = board_config[s];
+                lists.push(
                     <TasksList
                         key={tasks_list.id}
                         tasks_list={tasks_list}
@@ -564,7 +559,7 @@ var Board = React.createClass({
                         dragging={_this.dragging}
                     />
                 );
-            });
+            }
         }
         // create board
         return (

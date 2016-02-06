@@ -14,14 +14,6 @@ models_publisher = ws4redis.publisher.RedisPublisher(
     facility='models', broadcast=True)
 
 
-def __statuses():
-    return [o.to_dict() for o in ddgcorp.models.Status.objects.all()]
-
-
-def __tasks():
-    return [o.to_dict() for o in ddgcorp.models.Task.objects.all()]
-
-
 @django.dispatch.receiver(
     (
         django.db.models.signals.post_save,
@@ -36,10 +28,17 @@ def status_change_signal_processor(sender, instance, **kwargs):
     Fires on Status model change or delete
     Send all statuses to queue
     """
+    signal = kwargs['signal']
+    if signal == django.db.models.signals.post_save:
+        action = 'save'
+    elif signal == django.db.models.signals.post_delete:
+        action = 'delete'
+    else:
+        return
     data = {
-        'model': 'status',
-        'change': instance.to_dict(),
-        'objects': __statuses(),
+        'type': 'status',
+        'action': action,
+        'model': instance.to_dict(),
     }
     message = ws4redis.redis_store.RedisMessage(json.dumps(data))
     models_publisher.publish_message(message)
@@ -59,10 +58,17 @@ def task_change_signal_processor(sender, instance, **kwargs):
     Fires on Task model change or delete
     Send all tasks to queue
     """
+    signal = kwargs['signal']
+    if signal == django.db.models.signals.post_save:
+        action = 'save'
+    elif signal == django.db.models.signals.post_delete:
+        action = 'delete'
+    else:
+        return
     data = {
-        'model': 'task',
-        'change': instance.to_dict(),
-        'objects': __tasks(),
+        'type': 'task',
+        'action': action,
+        'model': instance.to_dict(),
     }
     message = ws4redis.redis_store.RedisMessage(json.dumps(data))
     models_publisher.publish_message(message)

@@ -66,5 +66,5 @@ class Task(django.db.models.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'status': self.status.to_dict(),
+            'status_id': self.status.id,
         }
