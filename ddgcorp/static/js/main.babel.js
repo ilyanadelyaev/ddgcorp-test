@@ -53,7 +53,7 @@ var Draggable = React.createClass({
     },
 
     onMouseDown: function(e) {
-        if ( e.button == 0 ) {  // left button
+        if ( e.button === 0 ) {  // left button
             e.stopPropagation();
             e.preventDefault();
             this.addEvents();
@@ -108,7 +108,7 @@ var Draggable = React.createClass({
             mouseDown: false,
             dragging: false,
             hover: false
-        }
+        };
     },
 
     // Tools
@@ -132,9 +132,9 @@ var Draggable = React.createClass({
                 top: this.state.top,
                 width: this.state.width,  // because absolute
                 height: this.state.height  // because absolute
-            }
+            };
         } else {
-            return {}
+            return {};
         }
     },
 
@@ -171,7 +171,7 @@ var DropTarget = React.createClass({
 
     // handlers
     onDrop: function(e) {
-        this.props.onDrop && this.props.dropID && this.props.onDrop(this.props.dropID())
+        this.props.onDrop && this.props.dropID && this.props.onDrop(this.props.dropID());
     },
     //
     onMouseEnter: function(e) {
@@ -182,13 +182,13 @@ var DropTarget = React.createClass({
     },
     mouseHover: function(hover) {
         this.setState({hover: hover});
-        this.props.mouseHover && this.props.mouseHover(hover)
+        this.props.mouseHover && this.props.mouseHover(hover);
     },
     //
     getInitialState: function() {
         return {
             hover: false
-        }
+        };
     },
     //
     render: function() {
@@ -223,7 +223,7 @@ var Task = React.createClass({
             id: this.props.task.id,
             list_id: this.props.list_id,
             el_id: this.elID()
-        }
+        };
     },
 
     // tools
@@ -265,13 +265,13 @@ var TasksList = React.createClass({
         return {
             id: this.props.tasks_list.id,
             el_id: this.elID()
-        }
+        };
     },
 
     getInitialState: function() {
         return {
             hover: false,
-        }
+        };
     },
 
     // tools
@@ -338,11 +338,11 @@ var Board = React.createClass({
     // D-n-D handlers
 
     onDragStart: function(data) {
-        this.setState({current_drag_item: data})
+        this.setState({current_drag_item: data});
     },
 
     onDragStop: function() {
-        this.setState({current_drag_item: null})
+        this.setState({current_drag_item: null});
     },
 
     dragging: function() {
@@ -353,21 +353,19 @@ var Board = React.createClass({
         // update board configuration and send server update request
         //
         if ( ! this.state.current_drag_item )
-            return
+            return;
         //
         var tasks = this.state.tasks;
         var statuses = this.state.statuses;
         //
         var task_id = this.state.current_drag_item.id;
-        var start_list_id = this.state.current_drag_item.list_id;
-        var end_list_id = data.id;
-        var new_status = statuses[end_list_id];
+        var new_status = statuses[data.id];
         // update task status
         tasks[task_id].status_id = new_status.id;
         //
         //this.setState({tasks: tasks});
         // send update request to server
-        this.updateTaskStatus(task_id, end_list_id);
+        this.updateTaskStatus(task_id, new_status.id);
     },
 
     // WebSockets
@@ -482,7 +480,7 @@ var Board = React.createClass({
             statuses: null,
             tasks: null,
             current_drag_item: null,
-        }
+        };
     },
 
     componentDidMount: function() {
