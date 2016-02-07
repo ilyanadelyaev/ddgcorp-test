@@ -14,7 +14,6 @@
     {% load staticfiles %}
 
     <script src="{% static "js/lib/jquery-2.2.0.min.js" %}"></script>
-    <script src="{% static "js/lib/babel-core.min.js" %}"></script>
 
     <!-- DEBUG - minify it -->
     <script src="{% static "js/lib/react.js" %}"></script>
@@ -23,5 +22,5 @@
 
     <script type="text/javascript" src="{% static "js/ws4redis.js" %}"></script>
 
-    <script type="text/babel" src="{% static "js/main.babel.js" %}"></script>
+    <script src="{% static "js/main.js" %}"></script>
 {% endblock %}

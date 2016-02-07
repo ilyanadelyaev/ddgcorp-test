@@ -148,15 +148,16 @@ var Draggable = React.createClass({
             'hover': this.state.hover
         });
         // draw
-        return (
-            <div
-                className={classes}
-                style={this.style()}
-                children={this.props.children}
-                onMouseDown={this.onMouseDown}
-                onMouseEnter={this.onMouseEnter}
-                onMouseLeave={this.onMouseLeave}
-            />
+        return React.createElement(
+            'div',
+            {
+                className: classes,
+                style: this.style(),
+                children: this.props.children,
+                onMouseDown: this.onMouseDown,
+                onMouseEnter: this.onMouseEnter,
+                onMouseLeave: this.onMouseLeave,
+            }
         );
     }
 });
@@ -169,28 +170,35 @@ var DropTarget = React.createClass({
     // * onDrop - process drop by parent
     // * dropID - to identify child object
 
-    // handlers
+    // Handlers
+
     onDrop: function(e) {
         this.props.onDrop && this.props.dropID && this.props.onDrop(this.props.dropID());
     },
-    //
+
     onMouseEnter: function(e) {
         this.mouseHover(true);
     },
+
     onMouseLeave: function(e) {
         this.mouseHover(false);
     },
+
     mouseHover: function(hover) {
         this.setState({hover: hover});
         this.props.mouseHover && this.props.mouseHover(hover);
     },
-    //
+
+    // Init
+
     getInitialState: function() {
         return {
             hover: false
         };
     },
-    //
+
+    // Draw
+
     render: function() {
         // classNames
         var classes = classNames({
@@ -198,14 +206,15 @@ var DropTarget = React.createClass({
             'hover': this.state.hover
         });
         //
-        return (
-            <div
-                className={classes}
-                children={this.props.children}
-                onMouseEnter={this.onMouseEnter}
-                onMouseLeave={this.onMouseLeave}
-                onMouseUp={this.onDrop}
-            />
+        return React.createElement(
+            'div',
+            {
+                className: classes,
+                children: this.props.children,
+                onMouseEnter: this.onMouseEnter,
+                onMouseLeave: this.onMouseLeave,
+                onMouseUp: this.onDrop,
+            }
         );
     }
 });
@@ -233,19 +242,21 @@ var Task = React.createClass({
 
     // draw
     render: function() {
-        return (
-            <Draggable
-                onDragStart={this.props.onDragStart}
-                onDragStop={this.props.onDragStop}
-                dragID={this.dragID}
-            >
-                <div
-                    id={this.elID()}
-                    className="ddgcorp-task"
-                >
-                    {this.props.task.name}
-                </div>
-            </Draggable>
+        return React.createElement(
+            Draggable,
+            {
+                onDragStart: this.props.onDragStart,
+                onDragStop: this.props.onDragStop,
+                dragID: this.dragID
+            },
+            React.createElement(
+                'div',
+                {
+                    id: this.elID(),
+                    className: 'ddgcorp-task'
+                },
+                this.props.task.name
+            )
         );
     }
 });
@@ -282,48 +293,56 @@ var TasksList = React.createClass({
     // draw
     render: function() {
         // drop place
-        var drop_place = '';
+        var drop_place = null;
         if ( this.props.dragging() && this.state.hover ) {
-            drop_place = (
-                <div className='dnd-drop-place'/>
+            drop_place = React.createElement(
+                'div',
+                {
+                    className: 'dnd-drop-place'
+                }
             );
         }
         // tasks list
-        var tasks = '';
+        var tasks = null;
         var _this = this;  // declare locally
         tasks = this.props.tasks_list.tasks.map(function(task) {
-            return (
-                <Task
-                    key={task.id}
-                    list_id={_this.props.tasks_list.id}
-                    task={task}
-                    onDragStart={_this.props.onDragStart}
-                    onDragStop={_this.props.onDragStop}
-                />
+            return React.createElement(
+                Task,
+                {
+                    key: task.id,
+                    list_id: _this.props.tasks_list.id,
+                    task: task,
+                    onDragStart: _this.props.onDragStart,
+                    onDragStop: _this.props.onDragStop
+                }
             );
         });
         // create list with DropTarget mixin
-        return (
-            <DropTarget
-                dropID={this.dropID}
-                onDrop={this.props.onDrop}
-                mouseHover={this.mouseHover}
-            >
-                <div
-                    id={this.elID()}
-                    className='ddgcorp-taskslist col-md-2'
-                    onMouseEnter={this.handleMouseEnter}
-                    onMouseLeave={this.handleMouseLeave}
-                >
-                    <div
-                        className="ddgcorp-statuslabel"
-                    >
-                        {this.props.tasks_list.name}
-                    </div>
-                    {drop_place}
-                    {tasks}
-                </div>
-            </DropTarget>
+        return React.createElement(
+            DropTarget,
+            {
+                dropID: this.dropID,
+                onDrop: this.props.onDrop,
+                mouseHover: this.mouseHover
+            },
+            React.createElement(
+                'div',
+                {
+                    id: this.elID(),
+                    className: 'ddgcorp-taskslist col-md-2',
+                    onMouseEnter: this.handleMouseEnter,
+                    onMouseLeave: this.handleMouseLeave
+                },
+                React.createElement(
+                    'div',
+                    {
+                        className: "ddgcorp-statuslabel"
+                    },
+                    this.props.tasks_list.name
+                ),
+                drop_place,
+                tasks
+            )
         );
     }
 });
@@ -542,32 +561,35 @@ var Board = React.createClass({
     render: function() {
         var board_config = this.getBoardConfig();
         // create tasks_lists
-        var lists = [];
+        var childs = [];
         if ( board_config ) {
             var _this = this;  // declare locally
             for ( var s in board_config ) {
                 var tasks_list = board_config[s];
-                lists.push(
-                    <TasksList
-                        key={tasks_list.id}
-                        tasks_list={tasks_list}
-                        onDragStart={_this.onDragStart}
-                        onDragStop={_this.onDragStop}
-                        onDrop={_this.onDrop}
-                        dragging={_this.dragging}
-                    />
+                childs.push(
+                    React.createElement(
+                        TasksList,
+                        {
+                            key: tasks_list.id,
+                            tasks_list: tasks_list,
+                            onDragStart: _this.onDragStart,
+                            onDragStop: _this.onDragStop,
+                            onDrop: _this.onDrop,
+                            dragging: _this.dragging
+                        }
+                    )
                 );
             }
         }
         // create board
-        return (
-            <div
-                className="ddgcorp-board row"
-                onDragStart={this.onDragStart}
-                onDragStop={this.onDragStop}
-            >
-                {lists}
-            </div>
+        return React.createElement(
+            'div',
+            {
+                className: 'ddgcorp-board row',
+                onDragStart: this.onDragStart,
+                onDragStop: this.onDragStop
+            },
+            childs
         );
     }
 });
@@ -575,5 +597,7 @@ var Board = React.createClass({
 
 // Run
 
-var mountNode = document.getElementById('content');
-ReactDOM.render(<Board/>, mountNode);
+ReactDOM.render(
+    React.createElement(Board),
+    document.getElementById('content')
+);
