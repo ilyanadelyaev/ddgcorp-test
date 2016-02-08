@@ -379,6 +379,9 @@ var Board = React.createClass({
         //
         var task_id = this.state.current_drag_item.id;
         var new_status = statuses[data.id];
+        // skip
+        if ( tasks[task_id].status_id == new_status.id )
+            return;
         // update task status
         tasks[task_id].status_id = new_status.id;
         //

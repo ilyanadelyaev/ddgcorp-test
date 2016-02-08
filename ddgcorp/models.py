@@ -108,6 +108,9 @@ class Task(django.db.models.Model):
         if not status:
             raise TaskModelError(
                 'Status {} does not exist'.format(status_id))
+        # skip
+        if task.status == status:
+            return
         # update status
         task.status = status
         task.save()
