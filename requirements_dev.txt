@@ -1,0 +1,5 @@
+Django==1.9.2
+django-websocket-redis==0.4.6
+pep8==1.7.0
+pylint==1.5.4
+pylint-django==0.7.1

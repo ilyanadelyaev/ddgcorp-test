@@ -127,6 +127,23 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+
+# WebSocket
+
+WEBSOCKET_URL = '/ws/'
+
+WS4REDIS_CONNECTION = {
+    'host': 'localhost',
+    'port': 6379,
+}
+
+WS4REDIS_EXPIRE = 7200
+
+WS4REDIS_HEARTBEAT = '--heartbeat--'
+
+WSGI_APPLICATION = 'ws4redis.django_runserver.application'
+
+
 # Logging
 
 LOGGING = {
@@ -166,21 +183,3 @@ LOGGING = {
         },
     }
 }
-
-
-# WebSocket
-
-WEBSOCKET_URL = '/ws/'
-
-WS4REDIS_CONNECTION = {
-    'host': 'localhost',
-    'port': 6379,
-}
-
-WS4REDIS_EXPIRE = 7200
-
-WS4REDIS_HEARTBEAT = '--heartbeat--'
-
-#WS4REDIS_SUBSCRIBER = 'myapp.redis_store.RedisSubscriber'
-
-WSGI_APPLICATION = 'ws4redis.django_runserver.application'
